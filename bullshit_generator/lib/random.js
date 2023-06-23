@@ -1,3 +1,4 @@
+// 返回一个小于等于 min，大于等于 max 的随机整数
 export function randomInt(min, max) {
   const p = Math.random()
   return Math.floor(min * (1 - p) + max * p)
