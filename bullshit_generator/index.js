@@ -1,32 +1,29 @@
 import generator from './lib/generator.js'
 import { createRandomPicker } from './lib/random.js'
-import usage from './helper/index.js'
 import { loadCorpus, saveCorpus } from './lib/corpus.js'
-
-import commandLineArgs from 'command-line-args'
+import { parseOptions, getOptions } from './lib/options.js'
+import { interact } from './lib/interact.js'
 ;(function () {
   main()
 
-  function main() {
-    // 配置我们的命令行参数
-    const optionDefinitions = [
-      { name: 'title', alias: 't', type: String },
-      { name: 'min', type: Number },
-      { name: 'max', type: Number },
-      { name: 'help' },
-    ]
-    // 获取命令行的输入，利用插件，能判断用户输入的参数是否符合规范
-    const options = commandLineArgs(optionDefinitions)
-    console.log(options)
-    // 如果是 --help ，则打印帮助文本
-    if ('help' in options) {
-      console.log(usage)
-      // 退出进程
-      process.exit()
-    }
-
+  async function main() {
+    // 获取 options
+    const options = getOptions()
     // // 获取用户输入，非插件
     // const options = parseOptions()
+
+    // 监听用户输入
+    if (Object.keys(options).length <= 0) {
+      const answers = await interact([
+        { text: '请输入文章主题', value: '科学和人文谁更有意义' },
+        { text: '请输入最小字数', value: 6000 },
+        { text: '请输入最大字数', value: 10000 },
+      ])
+      options.title = answers[0]
+      options.min = answers[1]
+      options.max = answers[2]
+    }
+
     // 获取语料库
     const corpus = loadCorpus(`corpus/data.json`)
     // 获得生成文章标题函数
@@ -37,22 +34,5 @@ import commandLineArgs from 'command-line-args'
     const article = generator(title, { corpus, ...options })
     // 保存文章
     saveCorpus(title, article)
-  }
-
-  // 读取参数
-  function parseOptions(options = {}) {
-    const argv = process.argv
-    for (let i = 2; i < argv.length; i++) {
-      const cmd = argv[i - 1]
-      const val = argv[i]
-      if (cmd === '--title') {
-        options.title = val
-      } else if (cmd === '--min') {
-        options.min = Number(val)
-      } else if (cmd === '--max') {
-        options.max = Number(val)
-      }
-    }
-    return options
   }
 })()
