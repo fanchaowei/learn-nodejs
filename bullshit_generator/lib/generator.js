@@ -1,5 +1,6 @@
 import { createRandomPicker, randomInt } from './random.js'
 
+// 生成文章
 export default function generator(
   title,
   { corpus, min = 600, max = 1000 } = {}
